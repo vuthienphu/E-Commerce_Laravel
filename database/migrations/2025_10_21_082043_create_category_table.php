@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('image_url')->nullable(); 
             $table->timestamps(); // created_at và updated_at
-        });
+            });
     }
 
     /**

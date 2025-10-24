@@ -16,11 +16,11 @@ public function index(){
 
    public function store(Request $request){
   $validated = $request->validate([
-        'name'        => 'required|unique:category,name|max:150',
+        'name'        => 'required|unique:category,name|max:255',
         'description' => 'nullable|string',
         'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
-
+$url = null;
     $path = null;
     if ($request->hasFile('image')) {
     $file = $request->file('image');
@@ -48,7 +48,7 @@ public function index(){
     $validated = $request->validate([
         'name'        => 'required|unique:category,name,' . $id . '|max:150',
         'description' => 'nullable|string',
-        'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+        'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
     // Lấy category theo id
@@ -100,4 +100,30 @@ public function destroy($id)
 
 }
 
+public function getProducts($categoryId)
+{
+    $category = Category::find($categoryId);
+
+    if (!$category) {
+        return response()->json(['message' => 'Category not found'], 404);
+    }
+
+    $products = $category->products; // Quan hệ hasMany
+
+    return response()->json($products);
+}
+
+
+public function getProductCategoryName($categoryName)
+{
+     $category = Category::where('name', $categoryName)->first();
+
+    if (!$category) {
+        return response()->json(['message' => 'Category not found'], 404);
+    }
+
+    $products = $category->products; // Quan hệ hasMany
+
+    return response()->json($products);
+}
 }
