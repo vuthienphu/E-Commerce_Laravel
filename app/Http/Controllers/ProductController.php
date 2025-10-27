@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\Product;
+use App\Enums\SortType;
+use Illuminate\Support\Facades\Storage;
+
 class ProductController extends Controller
 {
     public function store(Request $request)
@@ -63,6 +66,7 @@ class ProductController extends Controller
     public function search(Request $request){
 $keyword = $request -> input('keyword');
 $size = $request->input('size');
+$sort = $request->query('sort', SortType::PRICE_ASC->value);
 $minDisCount = $request->input('discount_percent',null);
 $perPage = $request->input('per_page', 6);
 
@@ -86,10 +90,91 @@ $query = Product::query()
     if($minDisCount !== null && $minDisCount !== ''){
         $query -> where('discount_percent','>=',$minDisCount);
     }
-    $products= $query->get();
-    $products = $query -> paginate($perPage);
-    return response()->json($products);
 
+     switch (SortType::from($sort)) {
+        case SortType::PRICE_ASC:
+            $query->orderByRaw('(original_price * (1 - discount_percent / 100)) asc');
+            break;
+
+        case SortType::PRICE_DESC:
+            $query->orderByRaw('(original_price * (1 - discount_percent / 100)) desc');
+            break;
 
     }
+    $products= $query->get();
+    //$products = $query -> paginate($perPage);
+    return response()->json($products);
+
+    }
+
+    public function update(Request $request, $id)
+{
+    // Validate dữ liệu
+    $validated = $request->validate([
+        'name'        => 'required|unique:products,name,' . $id . '|max:255',
+        'description' => 'nullable|string',
+        'size' => ['nullable', Rule::in(['S','M','L','XL','XXL','XS'])],
+            'original_price' => 'nullable|numeric|min:0',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'quantity' => 'nullable|integer|min:0',
+            'category_id' => 'required|exists:category,id',
+            'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'countRate' => 'nullable|numeric',
+    ]);
+
+    // Lấy category theo id
+    $product = Product::findOrFail($id);
+
+    // Nếu có file ảnh mới
+    if ($request->hasFile('image')) {
+        // Xóa ảnh cũ nếu có
+        if ($product->image_url) {
+            $oldPath = str_replace(url('storage') . '/', '', $product->image_url);
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $file = $request->file('image');
+        $fileName = $file->getClientOriginalName(); // tránh trùng tên
+        $path = $file->storeAs('images', $fileName, 'public');
+        $product->image_url = asset('storage/' . $path);
+    }
+   
+
+    // Cập nhật các trường còn lại
+    $product->name = $validated['name'];
+    $product->description = $validated['description'] ?? $product->description;
+    $product->size = $validated['size'] ?? $product->size;
+    $product->original_price = $validated['original_price'] ?? $product->original_price;
+    $product->discount_percent = $validated['discount_percent'] ?? $product->discount_percent;
+    $product->quantity = $validated['quantity'] ?? $product->quantity;
+    $product->category_id = $validated['category_id'] ?? $product->category_id;
+    $product->countRate = $validated['countRate'] ?? $product->countRate;    
+
+    // Lưu dữ liệu
+    $product->save();
+
+    return response()->json([
+        'message'  => 'Cập nhật sản phẩm thành công!',
+        'product' => $product
+    ]);
+}
+
+public function destroy($id)
+{
+    $product = Product::findOrFail($id);
+
+    // Xóa ảnh nếu có
+    if ($product->image_url) {
+        $oldPath = str_replace(url('storage') . '/', '', $product->image_url);
+        Storage::disk('public')->delete($oldPath);
+    }
+
+    $product->delete();
+
+    return response()->json([
+        'message' => 'Xóa danh mục thành công!'
+    ]);
+
+}
+
 }

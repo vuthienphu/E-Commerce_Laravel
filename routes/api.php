@@ -28,3 +28,5 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 Route::get('/products/category/{categoryId}', [CategoryController::class, 'getProducts']);
 Route::get('/search',[ProductController::class, 'search']);
+Route::post('/products/{id}', [ProductController::class, 'update']);
+Route::delete('/products/{id}', [ProductController::class, 'destroy']);
