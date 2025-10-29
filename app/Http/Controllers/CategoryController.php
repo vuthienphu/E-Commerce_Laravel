@@ -63,7 +63,7 @@ $url = null;
         }
 
         $file = $request->file('image');
-        $fileName = $file->getClientOriginalName(); // tránh trùng tên
+        $fileName = $file->getClientOriginalName();  
         $path = $file->storeAs('images', $fileName, 'public');
         $category->image_url = asset('storage/' . $path);
     }
