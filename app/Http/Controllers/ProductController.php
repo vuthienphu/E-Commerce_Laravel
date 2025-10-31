@@ -6,10 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\Product;
 use App\Enums\SortType;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -26,12 +28,10 @@ class ProductController extends Controller
         ]);
 
  $path = null;
- $url = null;
     if ($request->hasFile('image')) {
     $file = $request->file('image');
     $fileName = $file->getClientOriginalName(); //giữ nguyên tên file
     $path = $file->storeAs('images', $fileName, 'public');
-    $url = $path ? asset('storage/' . $path) : null;
     }
 
         $product = Product::create([
@@ -42,7 +42,7 @@ class ProductController extends Controller
             'discount_percent' => $validated['discount_percent'] ?? 0,
             'quantity' => $validated['quantity'] ?? 0,
             'category_id' => $validated['category_id'],
-            'image_url'   => $url,
+            'image_path'   => $path,
             'countRate' => $validated['countRate']
         ]);
 
@@ -54,13 +54,21 @@ class ProductController extends Controller
     }
 
     public function index(){
-        $products = Product::all();
-       return response() ->json($products);
+      $products = Product::all()->map(function ($product) {
+            if ($product->image_path && !str_starts_with($product->image_path, 'http')) {
+              $product->image_path= $product->image_path = asset('storage/' . $product->image_path);
+            }
+            return $product;
+        });
+        return response()->json($products);
     }
 
     public function show($id){
         $product = Product::findOrFail($id);
-        return response()->json($product);
+         if ($product->image_path && !str_starts_with($product->image_path, 'http')) {
+        $product->image_path = asset('storage/' . $product->image_path);
+    }
+           return response()->json($product);
     }
 
     public function search(Request $request){
@@ -101,7 +109,15 @@ $query = Product::query()
             break;
 
     }
-    $products= $query->get();
+
+   
+    $products = $query->get()->map(function ($product) {
+    if ($product->image_path && !str_starts_with($product->image_path, 'http')) {
+        $product->image_path = asset('storage/' . $product->image_path);
+    }
+    return $product;
+});
+    
     //$products = $query -> paginate($perPage);
     return response()->json($products);
 
@@ -128,15 +144,16 @@ $query = Product::query()
     // Nếu có file ảnh mới
     if ($request->hasFile('image')) {
         // Xóa ảnh cũ nếu có
-        if ($product->image_url) {
-            $oldPath = str_replace(url('storage') . '/', '', $product->image_url);
-            Storage::disk('public')->delete($oldPath);
+        if ($product->image_path) {
+            if ($product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
+            }
         }
 
         $file = $request->file('image');
-        $fileName = $file->getClientOriginalName(); // tránh trùng tên
+        $fileName = $file->getClientOriginalName(); 
         $path = $file->storeAs('images', $fileName, 'public');
-        $product->image_url = asset('storage/' . $path);
+        $product->image_path = $path;
     }
    
 
@@ -164,10 +181,10 @@ public function destroy($id)
     $product = Product::findOrFail($id);
 
     // Xóa ảnh nếu có
-    if ($product->image_url) {
-        $oldPath = str_replace(url('storage') . '/', '', $product->image_url);
-        Storage::disk('public')->delete($oldPath);
-    }
+    if ($product->image_path) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+
 
     $product->delete();
 
@@ -176,5 +193,7 @@ public function destroy($id)
     ]);
 
 }
+
+
 
 }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id(); // id BIGINT AUTO_INCREMENT PRIMARY KEY
+            $table->id();
             $table->string('name', 255); // Tên sản phẩm
             $table->text('description')->nullable(); // Mô tả
             $table->enum('size', ['XS', 'S', 'M', 'L', 'XL', 'XXL'])->nullable();
@@ -20,15 +20,9 @@ return new class extends Migration
             $table->decimal('discount_percent', 5, 2)->default(0); // % giảm giá
             $table->integer('quantity')->default(0); // Số lượng tồn
             $table->unsignedBigInteger('category_id'); // Danh mục ID
-            $table->string('image_url')->nullable(); // Ảnh sản phẩm
+            $table->string('image_path')->nullable(); // Ảnh sản phẩm
             $table->integer('countRate')->default(0);
-            $table->timestamps(); // created_at, updated_at
-
-            // Khóa ngoại
-            $table->foreign('category_id')
-                  ->references('id')
-                  ->on('category')
-                  ->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

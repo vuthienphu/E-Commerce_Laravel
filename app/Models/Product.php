@@ -21,7 +21,7 @@ class Product extends Model
         'discount_percent',
         'quantity',
         'category_id',
-        'image_url',
+        'image_path',
         'countRate',
     ];
 
