@@ -27,6 +27,8 @@ class ProductController extends Controller
             
         ]);
 
+$validated['countRate'] = $validated['countRate'] ?? 0;
+
  $path = null;
     if ($request->hasFile('image')) {
     $file = $request->file('image');
@@ -43,7 +45,7 @@ class ProductController extends Controller
             'quantity' => $validated['quantity'] ?? 0,
             'category_id' => $validated['category_id'],
             'image_path'   => $path,
-            'countRate' => $validated['countRate']
+           'countRate' => $validated['countRate'],
         ]);
 
         return response()->json([
