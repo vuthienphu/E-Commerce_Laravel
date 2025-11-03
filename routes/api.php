@@ -47,3 +47,4 @@ Route::post('/login', [AuthController::class, 'login']);
     Route::post('/category/{id}', [CategoryController::class, 'update']);
        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::delete('/category/{id}', [CategoryController::class, 'destroy']);
+Route::post('/refreshToken', [AuthController::class, 'refreshToken']);

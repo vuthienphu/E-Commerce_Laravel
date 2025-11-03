@@ -31,34 +31,38 @@ $validate = $request -> validate(['name'=>'required|string|max:255',
 
     public function login(Request $request)
     {
+        
 $credentials = $request -> validate(['email'=>'required|email',
                                  'password'=>'required|string|min:8']);
+ JWTAuth::factory()->setTTL(3); //token sống được 5 phút
 if(!$token = auth('api')->attempt($credentials)){
-        return response()->json(['error'=>'Invalid credentials'],401);
+        return response()->json(['error'=>'Email hoặc mật khẩu không đúng'],401);
     }
 $user = auth('api')->user();
 
- $ttl = JWTAuth::factory()->getTTL() * 60; 
+ 
 
-return response()->json([  'access_token'=>$token,
+return response()->json(['access_token'=>$token,
             'token_type'=>'bearer',
-            'expires_in' => $ttl,
-            'user'=>$user,
-            'role'=>$user->role,
-]);
+             'token_type' => 'bearer',
+        'expires_in' => JWTAuth::factory()->getTTL() * 60, // 15 phút = 900 giây
+            ]);
 
-    }
+}
 
    public function refreshToken(Request $request)
     {
-        $newToken = JWTAuth::manager()->refresh(
-            JWTAuth::getToken()
-        );
-
+        try {
+        $token = JWTAuth::parseToken()->refresh(); // tự lấy token từ header
         return response()->json([
-            'access_token' => $newToken,
+            'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ]);
+    } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+        return response()->json(['error' => 'Token đã hết hạn, vui lòng đăng nhập lại'], 401);
+    } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+        return response()->json(['error' => 'Không thể refresh token'], 400);
+    }
     }
 }
