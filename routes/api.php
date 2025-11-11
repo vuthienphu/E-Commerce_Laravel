@@ -5,6 +5,9 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+ use App\Http\Controllers\CartController;
+ use App\Http\Controllers\CartItemController;
+use App\Models\Cart;
 
 // Route::get('/products', [ProductController::class, 'index']);
 // Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -48,3 +51,8 @@ Route::post('/login', [AuthController::class, 'login']);
        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::delete('/category/{id}', [CategoryController::class, 'destroy']);
 Route::post('/refreshToken', [AuthController::class, 'refreshToken']);
+Route::post('/cart', [CartController::class, 'store']);
+Route::get('/cart/{id}', [CartController::class, 'getTotalPrice']);
+Route::post('/cartItem', [CartItemController::class, 'store']);
+Route::delete('/cartItem/{id}', [CartItemController::class, 'destroy']);
+Route::post('/cartItem/{id}', [CartItemController::class, 'update']);
