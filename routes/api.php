@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
  use App\Http\Controllers\CartController;
  use App\Http\Controllers\CartItemController;
+use App\Http\Controllers\OrderController;
 use App\Models\Cart;
+use App\Models\Order;
 
 // Route::get('/products', [ProductController::class, 'index']);
 // Route::get('/products/{id}', [ProductController::class, 'show']);
@@ -56,3 +58,4 @@ Route::get('/cart/{id}', [CartController::class, 'getTotalPrice']);
 Route::post('/cartItem', [CartItemController::class, 'store']);
 Route::delete('/cartItem/{id}', [CartItemController::class, 'destroy']);
 Route::post('/cartItem/{id}', [CartItemController::class, 'update']);
+Route::post('/orders', [OrderController::class, 'storeBuyNow']);

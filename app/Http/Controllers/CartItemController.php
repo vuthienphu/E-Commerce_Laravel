@@ -14,11 +14,21 @@ $validate = $request->validate([
     'product_id'=>'required|integer|exists:products,id',
     'quantity'=>'required|integer|min:1']);
 
+    $cartItem = CartItem::where('cart_id', $validate['cart_id'])
+                    ->where('product_id', $validate['product_id'])
+                    ->first();
+
+if ($cartItem) {
+    $cartItem->quantity = $cartItem->quantity+$validate['quantity'];
+     $cartItem->save(); 
+}
+else{
      $cartItem = CartItem::create(['cart_id'=>$validate['cart_id'],
                                     'product_id'=>$validate['product_id'],
                                     'quantity'=>$validate['quantity']
                                 ]);
 
+                            }
     return response()->json([
         'message'=>'Thêm sản phẩm vào giỏ hàng thành công',
         'cartItem'=> $cartItem

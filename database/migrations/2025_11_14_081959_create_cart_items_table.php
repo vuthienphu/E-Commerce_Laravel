@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cart_items', function (Blueprint $table) {
-           $table->id();
+          $table->id();
             $table->unsignedBigInteger('cart_id'); // id của user (cũng là id giỏ hàng)
             $table->unsignedBigInteger('product_id');
             $table->integer('quantity')->default(1);

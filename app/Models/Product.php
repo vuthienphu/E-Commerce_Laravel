@@ -40,4 +40,10 @@ class Product extends Model
     {
         return $this->original_price * (1 - $this->discount_percent / 100);
     }
+
+    public function orderItem()
+{
+    return $this->hasOne(OrderItem::class, 'id');
+}
+
 }

@@ -63,5 +63,9 @@ public function cart()
     return $this->hasOne(Cart::class, 'id');
 }
 
+public function orders()
+{
+    return $this->hasMany(Order::class);
+}
    
 }
