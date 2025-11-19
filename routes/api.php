@@ -59,3 +59,4 @@ Route::post('/cartItem', [CartItemController::class, 'store']);
 Route::delete('/cartItem/{id}', [CartItemController::class, 'destroy']);
 Route::post('/cartItem/{id}', [CartItemController::class, 'update']);
 Route::post('/orders', [OrderController::class, 'storeBuyNow']);
+Route::post('/orders/cart', [OrderController::class, 'storeCart']);
