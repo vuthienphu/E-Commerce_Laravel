@@ -37,11 +37,18 @@ return response()->json([
 
 public function storeCart(Request $request){
     $validateOrder = $request->validate(['user_id'=>'required|integer|exists:users,id',]);
-    
+try{
+
     $order = Order::create(['user_id'=>$validateOrder['user_id']]);
     $cart = Cart::findOrFail($order->user_id);
     $products = $cart->items;
     $orderId = $order->id;
+     if($products->isEmpty()){
+            return response()->json([
+                'message' => "Giỏ hàng trống, không thể tạo đơn"
+            ], 400);
+        }
+
     foreach($products as $product){
         $orderItem = OrderItem::create((['order_id'   => $orderId,
                                         'product_id'=>$product->product_id,
@@ -60,10 +67,20 @@ $totalPrice = 0;
         }
 $order->total_price = $totalPrice;
 $order->save();
+$cart->items()->delete();
     return response()->json([
     'message'=>"Tạo đơn hàng thành công",
     'order'=>$order
 ],201);
+}catch (\Exception $e) {
+        // Nếu có lỗi, cart sẽ không bị xóa
+        return response()->json([
+            'message'=>"Tạo đơn hàng thất bại",
+            'error'=>$e->getMessage()
+        ],500);
+    }
+
+
 }
 
 }
